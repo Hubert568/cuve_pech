@@ -1178,7 +1178,7 @@
     </div>
 
     <!-- Landscape -->
-    <div class="landscape-only landscape-chart">
+    <div class="landscape-only landscape-chart" id="landscapeContainer">
         <div class="landscape-header">
             <div class="chart-title">Niveau de la cuve</div>
             <div class="chart-filters">
@@ -1399,8 +1399,8 @@
 
         function handleOrientation() {
             const update = () => {
-                if (window.innerWidth > window.innerHeight) updateLandscapeChart();
-                else updateCharts();
+                if (isLoggedIn && window.innerWidth > window.innerHeight) updateLandscapeChart();
+                else if (isLoggedIn) updateCharts();
             };
             window.addEventListener('resize', update);
             update();
@@ -2032,7 +2032,9 @@
                 document.getElementById('modal-login').classList.remove('show');
                 document.getElementById('bottomNav').style.display = 'flex';
                 document.getElementById('bottomCards').style.display = 'flex';
+                document.getElementById('landscapeContainer').style.display = '';
                 loadData();
+                handleOrientation();
             } else {
                 showToast('Erreur', true);
                 document.getElementById('login-code').value = '';
@@ -2042,6 +2044,7 @@
         function initLoginState() {
             document.getElementById('bottomNav').style.display = 'none';
             document.getElementById('bottomCards').style.display = 'none';
+            document.getElementById('landscapeContainer').style.display = 'none';
         }
 
         function toggleFullscreen() {
