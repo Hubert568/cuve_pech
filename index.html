@@ -733,6 +733,65 @@
             margin-top: 0;
         }
 
+        .history-year-header-orange {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-align: center;
+            padding: 15px 0 10px 0;
+            margin-top: 10px;
+            border-top: 1px solid var(--bg-secondary);
+        }
+
+        .history-year-header-orange:first-child {
+            border-top: none;
+            margin-top: 0;
+        }
+
+        .history-item-refill {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--bg-secondary);
+            gap: 8px;
+        }
+
+        .history-item-refill:last-child {
+            border-bottom: none;
+        }
+
+        .history-date-short {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            min-width: 35px;
+        }
+
+        .refill-actions-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .edit-btn-small {
+            background: none;
+            border: none;
+            color: var(--info);
+            font-size: 0.85rem;
+            padding: 2px 6px;
+            opacity: 0.7;
+        }
+
+        .delete-btn-small {
+            background: none;
+            border: none;
+            color: var(--danger);
+            font-size: 1rem;
+            padding: 2px 6px;
+            opacity: 0.7;
+            font-weight: bold;
+        }
+
         .history-date {
             font-size: 0.9rem;
             color: var(--text-secondary);
@@ -2019,11 +2078,26 @@
                         grouped[year].push(r);
                     });
                     
+                    // Sort years from recent to old
+                    const sortedYears = Object.keys(grouped).sort((a, b) => b - a);
+                    
                     let html = '';
-                    Object.entries(grouped).forEach(([year, items]) => {
-                        html += `<div class="history-year-header">— ${year} —</div>`;
+                    sortedYears.forEach(year => {
+                        const items = grouped[year];
+                        html += `<div class="history-year-header-orange">${year}</div>`;
                         items.forEach(r => {
-                            html += `<div class="history-item"><span class="history-date">${formatDate(r.date)}</span><div class="history-values"><span class="history-liters">${r.liters} L</span><span class="history-price">${r.price} €</span><span class="history-ppl">${r.pricePerLiter} €/L</span><button class="edit-btn" onclick="openEditRefill(${r.id})">✎</button><button class="delete-btn" onclick="deleteRefill(${r.id})">×</button></div></div>`;
+                            const d = new Date(r.date);
+                            const dateStr = `${d.getDate()}/${d.getMonth() + 1}`;
+                            html += `<div class="history-item-refill">
+                                <span class="history-date-short">${dateStr}</span>
+                                <span class="history-liters">${r.liters} L</span>
+                                <span class="history-price">${r.price} €</span>
+                                <span class="history-ppl">${r.pricePerLiter} €/L</span>
+                                <div class="refill-actions-vertical">
+                                    <button class="edit-btn-small" onclick="openEditRefill(${r.id})">✎</button>
+                                    <button class="delete-btn-small" onclick="deleteRefill(${r.id})">×</button>
+                                </div>
+                            </div>`;
                         });
                     });
                     fl.innerHTML = html;
@@ -2304,4 +2378,3 @@
     </script>
 </body>
 </html>
-
