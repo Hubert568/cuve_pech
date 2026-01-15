@@ -844,6 +844,47 @@
             font-size: 0.75rem;
         }
 
+        /* Sortable Table */
+        .sortable-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .sortable-table th {
+            background: var(--bg-secondary);
+            color: var(--accent);
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 600;
+        }
+
+        .sortable-table th:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .sortable-table th span {
+            font-size: 0.7rem;
+            margin-left: 3px;
+        }
+
+        .sortable-table td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--bg-secondary);
+        }
+
+        .sortable-table tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .sortable-table .col-year { color: var(--text-primary); }
+        .sortable-table .col-ppl { color: var(--info); }
+        .sortable-table .col-liters { color: var(--success); }
+        .sortable-table .col-price { color: var(--text-secondary); }
+
         .delete-btn {
             background: none;
             border: none;
@@ -1168,6 +1209,8 @@
             <div class="pagination-dot" data-slide="2"></div>
             <div class="pagination-dot" data-slide="3"></div>
             <div class="pagination-dot" data-slide="4"></div>
+            <div class="pagination-dot" data-slide="5"></div>
+            <div class="pagination-dot" data-slide="6"></div>
         </div>
 
         <div class="stats-container">
@@ -1245,12 +1288,20 @@
                     </div>
                     <div class="price-stats-row">
                         <div class="price-stat-item">
-                            <div class="price-stat-label">Prix moyen</div>
-                            <div class="price-stat-value" id="stat-avg-price">-- €/L</div>
+                            <div class="price-stat-label">Min</div>
+                            <div class="price-stat-value" id="stat-min-price">--</div>
                         </div>
                         <div class="price-stat-item">
-                            <div class="price-stat-label">Dernier prix</div>
-                            <div class="price-stat-value" id="stat-last-price">-- €/L</div>
+                            <div class="price-stat-label">Max</div>
+                            <div class="price-stat-value" id="stat-max-price">--</div>
+                        </div>
+                        <div class="price-stat-item">
+                            <div class="price-stat-label">Moyen</div>
+                            <div class="price-stat-value" id="stat-avg-price">--</div>
+                        </div>
+                        <div class="price-stat-item">
+                            <div class="price-stat-label">Dernier</div>
+                            <div class="price-stat-value" id="stat-last-price">--</div>
                         </div>
                     </div>
                     <div class="chart-card" style="height: 35%;">
@@ -1259,7 +1310,7 @@
                         </div>
                         <div class="chart-container"><canvas id="levelChart"></canvas></div>
                     </div>
-                    <div class="chart-filters-row">
+                    <div class="chart-filters-row" id="level-filters">
                         <button class="filter-btn" onclick="setLevelFilter('3m')">3m</button>
                         <button class="filter-btn" onclick="setLevelFilter('6m')">6m</button>
                         <button class="filter-btn active" onclick="setLevelFilter('1y')">1an</button>
@@ -1267,13 +1318,31 @@
                     </div>
                 </div>
 
-                <!-- Slide 4: Yearly Summary Chart -->
+                <!-- Slide 3: Yearly Summary Chart -->
                 <div class="stats-slide">
                     <div class="chart-card">
                         <div class="chart-header">
                             <div class="chart-title">Résumé par année</div>
                         </div>
                         <div class="chart-container"><canvas id="yearlyChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Slide 4: Sortable Table -->
+                <div class="stats-slide">
+                    <div class="history-card">
+                        <div class="history-title">Tableau des livraisons</div>
+                        <table class="sortable-table" id="refills-table">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable('year')" class="sortable">Année <span id="sort-year">▼</span></th>
+                                    <th onclick="sortTable('ppl')" class="sortable">€/L <span id="sort-ppl"></span></th>
+                                    <th onclick="sortTable('liters')" class="sortable">Litres <span id="sort-liters"></span></th>
+                                    <th onclick="sortTable('price')" class="sortable">Total <span id="sort-price"></span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body"></tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -1584,7 +1653,7 @@
                 if (!isDragging) return;
                 isDragging = false;
                 const diff = currentX - startX;
-                if (diff < -60 && currentSlide < 4) currentSlide++;
+                if (diff < -60 && currentSlide < 6) currentSlide++;
                 else if (diff > 60 && currentSlide > 0) currentSlide--;
                 updateSlide();
             });
@@ -1787,8 +1856,19 @@
             const avg = totalL > 0 ? (totalP / totalL).toFixed(2) : '--';
             const last = refills.length > 0 ? refills[refills.length - 1].pricePerLiter : '--';
             
-            document.getElementById('stat-avg-price').textContent = `${avg} €/L`;
-            document.getElementById('stat-last-price').textContent = `${last} €/L`;
+            // Min and Max price per liter
+            let minPrice = '--';
+            let maxPrice = '--';
+            if (refills.length > 0) {
+                const prices = refills.map(r => parseFloat(r.pricePerLiter));
+                minPrice = Math.min(...prices).toFixed(2);
+                maxPrice = Math.max(...prices).toFixed(2);
+            }
+            
+            document.getElementById('stat-min-price').textContent = minPrice;
+            document.getElementById('stat-max-price').textContent = maxPrice;
+            document.getElementById('stat-avg-price').textContent = avg;
+            document.getElementById('stat-last-price').textContent = last;
         }
 
         function updateStatsPage() {
@@ -1798,6 +1878,80 @@
             document.getElementById('stats-total-liters').textContent = totalL > 0 ? `${totalL.toLocaleString()} L` : '-- L';
             
             updateSpentDisplay();
+            updateRefillsTable();
+        }
+
+        let currentSort = { column: 'year', direction: 'desc' };
+
+        function updateRefillsTable() {
+            const tbody = document.getElementById('table-body');
+            if (!tbody) return;
+
+            // Group by year
+            const yearlyData = {};
+            refills.forEach(r => {
+                const year = new Date(r.date).getFullYear();
+                if (!yearlyData[year]) {
+                    yearlyData[year] = { year: year, liters: 0, price: 0, count: 0, totalPpl: 0 };
+                }
+                yearlyData[year].liters += r.liters;
+                yearlyData[year].price += r.price;
+                yearlyData[year].count++;
+                yearlyData[year].totalPpl += parseFloat(r.pricePerLiter);
+            });
+
+            // Calculate average ppl per year
+            Object.values(yearlyData).forEach(y => {
+                y.ppl = y.count > 0 ? (y.totalPpl / y.count).toFixed(3) : 0;
+            });
+
+            // Sort data
+            let sortedData = Object.values(yearlyData);
+            sortedData.sort((a, b) => {
+                let valA = a[currentSort.column];
+                let valB = b[currentSort.column];
+                if (currentSort.column === 'ppl') {
+                    valA = parseFloat(valA);
+                    valB = parseFloat(valB);
+                }
+                if (currentSort.direction === 'asc') {
+                    return valA > valB ? 1 : -1;
+                } else {
+                    return valA < valB ? 1 : -1;
+                }
+            });
+
+            // Update sort indicators
+            ['year', 'ppl', 'liters', 'price'].forEach(col => {
+                const el = document.getElementById('sort-' + col);
+                if (el) {
+                    if (currentSort.column === col) {
+                        el.textContent = currentSort.direction === 'asc' ? '▲' : '▼';
+                    } else {
+                        el.textContent = '';
+                    }
+                }
+            });
+
+            // Render table
+            tbody.innerHTML = sortedData.map(y => `
+                <tr>
+                    <td class="col-year">${y.year}</td>
+                    <td class="col-ppl">${y.ppl}</td>
+                    <td class="col-liters">${y.liters.toLocaleString()}</td>
+                    <td class="col-price">${y.price.toLocaleString()} €</td>
+                </tr>
+            `).join('');
+        }
+
+        function sortTable(column) {
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'desc';
+            }
+            updateRefillsTable();
         }
 
         function cycleSpentPeriod() {
@@ -2254,10 +2408,18 @@
 
         function setLevelFilter(f) {
             currentLevelFilter = f;
-            const grids = document.querySelectorAll('.chart-filters-grid');
-            if (grids[0]) {
-                grids[0].querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                grids[0].querySelector(`[onclick="setLevelFilter('${f}')"]`).classList.add('active');
+            const container = document.getElementById('level-filters');
+            if (container) {
+                container.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('active');
+                    if (b.textContent.toLowerCase().includes(f.replace('m', '').replace('y', '')) || 
+                        (f === 'all' && b.textContent === 'Tout') ||
+                        (f === '1y' && b.textContent === '1an') ||
+                        (f === '3m' && b.textContent === '3m') ||
+                        (f === '6m' && b.textContent === '6m')) {
+                        b.classList.add('active');
+                    }
+                });
             }
             updateLevelChart();
             if (window.innerWidth > window.innerHeight) updateLandscapeChart();
