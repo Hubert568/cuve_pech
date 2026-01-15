@@ -806,8 +806,31 @@
 
         .history-level { color: var(--info); font-weight: 500; }
         .history-liters { color: var(--success); }
-        .history-price { color: var(--accent); }
+        .history-price { color: var(--text-secondary); }
         .history-ppl { color: var(--info); }
+
+        .price-stats-row {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            margin-top: 10px;
+        }
+
+        .price-stat-item {
+            text-align: center;
+        }
+
+        .price-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .price-stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
 
         .delete-btn {
             background: none;
@@ -1141,14 +1164,6 @@
                 <!-- Slide 1: Stats Grid + Delivery Nav -->
                 <div class="stats-slide">
                     <div class="stats-grid">
-                        <div class="stat-card no-bg">
-                            <div class="label">Prix moyen</div>
-                            <div class="value" id="stat-avg-price">-- €/L</div>
-                        </div>
-                        <div class="stat-card no-bg">
-                            <div class="label">Dernier prix</div>
-                            <div class="value" id="stat-last-price">-- €/L</div>
-                        </div>
                         <div class="stat-card full-width no-bg consumption-card">
                             <div class="label">Consommation</div>
                             <div class="consumption-grid">
@@ -1232,18 +1247,22 @@
                 </div>
 
                 <!-- Slide 3: Price Chart -->
-                <div class="stats-slide" style="padding-top: 150px; padding-bottom: 150px;">
-                    <div class="chart-card" style="height: calc(100% - 20px);">
+                <div class="stats-slide" style="padding-top: 100px; padding-bottom: 100px;">
+                    <div class="chart-card" style="height: calc(100% - 80px);">
                         <div class="chart-header">
                             <div class="chart-title">Prix au litre</div>
                         </div>
                         <div class="chart-container"><canvas id="priceChart"></canvas></div>
                     </div>
-                    <div class="chart-filters-grid">
-                        <button class="filter-btn" onclick="setPriceFilter('3m')">3 mois</button>
-                        <button class="filter-btn" onclick="setPriceFilter('6m')">6 mois</button>
-                        <button class="filter-btn" onclick="setPriceFilter('1y')">1 an</button>
-                        <button class="filter-btn active" onclick="setPriceFilter('all')">Tout</button>
+                    <div class="price-stats-row">
+                        <div class="price-stat-item">
+                            <div class="price-stat-label">Prix moyen</div>
+                            <div class="price-stat-value" id="stat-avg-price">-- €/L</div>
+                        </div>
+                        <div class="price-stat-item">
+                            <div class="price-stat-label">Dernier prix</div>
+                            <div class="price-stat-value" id="stat-last-price">-- €/L</div>
+                        </div>
                     </div>
                 </div>
 
@@ -1319,7 +1338,7 @@
             <div class="modal-title">Accès</div>
             <div class="modal-input-group">
                 <label>Code d'accès</label>
-                <input type="password" id="login-code" maxlength="10" placeholder="••••••••••" inputmode="numeric">
+                <input type="password" id="login-code" maxlength="10" placeholder="••••••••••" inputmode="numeric" oninput="checkAutoLogin()">
             </div>
             <div class="modal-buttons">
                 <button class="modal-btn primary" onclick="checkLogin()">Entrer</button>
@@ -2348,6 +2367,13 @@
             } else {
                 showToast('Erreur', true);
                 document.getElementById('login-code').value = '';
+            }
+        }
+
+        function checkAutoLogin() {
+            const code = document.getElementById('login-code').value;
+            if (code.length === 4) {
+                checkLogin();
             }
         }
 
