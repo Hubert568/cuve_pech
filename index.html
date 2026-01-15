@@ -1278,8 +1278,8 @@
                 </div>
 
                 <!-- Slide 2: Price Chart + Level Chart -->
-                <div class="stats-slide">
-                    <div class="chart-card" style="height: 45%;">
+                <div class="stats-slide" style="padding: 10px 0;">
+                    <div class="chart-card" style="height: 40%; margin-bottom: 5px;">
                         <div class="chart-header">
                             <div class="chart-title">Prix au litre</div>
                         </div>
@@ -1303,7 +1303,7 @@
                             <div class="price-stat-value" id="stat-last-price">--</div>
                         </div>
                     </div>
-                    <div class="chart-card" style="height: 35%;">
+                    <div class="chart-card" style="height: 35%; margin-top: 5px;">
                         <div class="chart-header">
                             <div class="chart-title">Niveau de la cuve</div>
                         </div>
@@ -1854,10 +1854,10 @@
                 maxPrice = Math.max(...prices).toFixed(2);
             }
             
-            document.getElementById('stat-min-price').textContent = minPrice;
-            document.getElementById('stat-max-price').textContent = maxPrice;
-            document.getElementById('stat-avg-price').textContent = avg;
-            document.getElementById('stat-last-price').textContent = last;
+            document.getElementById('stat-min-price').textContent = minPrice + '€';
+            document.getElementById('stat-max-price').textContent = maxPrice + '€';
+            document.getElementById('stat-avg-price').textContent = avg + '€';
+            document.getElementById('stat-last-price').textContent = last + '€';
         }
 
         function updateStatsPage() {
