@@ -1302,6 +1302,19 @@
             appId: "1:54849711974:web:96257e7f978796ec3fe2a7"
         };
 
+        // Simple hash function
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+        
+        const VALID_HASH = '-1082378427'; // Hash of the secret code
+
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -1863,7 +1876,7 @@
             const code = document.getElementById('gauge-code').value;
             
             if (isNaN(val) || val < 0 || val > 1000) { showToast('Valeur invalide', true); return; }
-            if (code !== '0077') { showToast('Code incorrect', true); return; }
+            if (hashCode(code) !== VALID_HASH) { showToast('Erreur', true); return; }
             
             readings.push({ id: Date.now(), date: new Date().toISOString().split('T')[0], level: val });
             readings.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -1881,7 +1894,7 @@
             
             if (isNaN(l) || l <= 0) { showToast('Quantité invalide', true); return; }
             if (isNaN(p) || p <= 0) { showToast('Prix non indiqué', true); return; }
-            if (code !== '0077') { showToast('Code incorrect', true); return; }
+            if (hashCode(code) !== VALID_HASH) { showToast('Erreur', true); return; }
             
             const today = new Date().toISOString().split('T')[0];
             refills.push({ id: Date.now(), date: today, liters: l, price: p, pricePerLiter: (p / l).toFixed(3) });
@@ -1919,7 +1932,7 @@
 
         function confirmDelete() {
             const code = document.getElementById('delete-code').value;
-            if (code === '0077') {
+            if (hashCode(code) === VALID_HASH) {
                 if (deleteTarget.type === 'reading') {
                     readings = readings.filter(r => r.id !== deleteTarget.id);
                     showToast('Lecture supprimée ✓');
@@ -1932,7 +1945,7 @@
                 updateUI();
                 closeDeleteModal();
             } else {
-                showToast('Code incorrect', true);
+                showToast('Erreur', true);
                 document.getElementById('delete-code').value = '';
                 document.getElementById('delete-code').focus();
             }
