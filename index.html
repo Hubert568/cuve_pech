@@ -45,10 +45,10 @@
         }
 
         @media (orientation: landscape) {
-            .portrait-only { display: none !important; }
-            .bottom-nav { display: none; }
+            body.logged-in .portrait-only { display: none !important; }
+            body.logged-in .bottom-nav { display: none; }
             
-            .landscape-chart {
+            body.logged-in .landscape-chart {
                 position: fixed;
                 inset: 0;
                 background: var(--bg-primary);
@@ -1656,7 +1656,7 @@
         }
 
         function cycleSpentPeriod() {
-            spentPeriod = (spentPeriod + 1) % 3;
+            spentPeriod = (spentPeriod + 1) % 2;
             updateSpentDisplay();
         }
 
@@ -1670,12 +1670,9 @@
             if (spentPeriod === 0) {
                 filteredRefills = refills.filter(r => new Date(r.date).getFullYear() === currentYear);
                 label = `Total dépensé (${currentYear})`;
-            } else if (spentPeriod === 1) {
+            } else {
                 filteredRefills = refills.filter(r => new Date(r.date).getFullYear() === lastYear);
                 label = `Total dépensé (${lastYear})`;
-            } else {
-                filteredRefills = refills;
-                label = 'Total dépensé (depuis le début)';
             }
             
             const totalP = filteredRefills.reduce((s, r) => s + r.price, 0);
@@ -2029,6 +2026,8 @@
             const code = document.getElementById('login-code').value;
             if (hashCode(code) === VALID_HASH) {
                 isLoggedIn = true;
+                sessionStorage.setItem('logged', 'true');
+                document.body.classList.add('logged-in');
                 document.getElementById('modal-login').classList.remove('show');
                 document.getElementById('bottomNav').style.display = 'flex';
                 document.getElementById('bottomCards').style.display = 'flex';
@@ -2042,9 +2041,18 @@
         }
 
         function initLoginState() {
-            document.getElementById('bottomNav').style.display = 'none';
-            document.getElementById('bottomCards').style.display = 'none';
-            document.getElementById('landscapeContainer').style.display = 'none';
+            if (sessionStorage.getItem('logged') === 'true') {
+                isLoggedIn = true;
+                document.body.classList.add('logged-in');
+                document.getElementById('bottomNav').style.display = 'flex';
+                document.getElementById('bottomCards').style.display = 'flex';
+                document.getElementById('landscapeContainer').style.display = '';
+                loadData();
+            } else {
+                document.getElementById('bottomNav').style.display = 'none';
+                document.getElementById('bottomCards').style.display = 'none';
+                document.getElementById('landscapeContainer').style.display = 'none';
+            }
         }
 
         function toggleFullscreen() {
