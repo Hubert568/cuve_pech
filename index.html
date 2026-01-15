@@ -832,6 +832,18 @@
             color: var(--accent);
         }
 
+        .chart-filters-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .chart-filters-row .filter-btn {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
+
         .delete-btn {
             background: none;
             border: none;
@@ -1156,7 +1168,6 @@
             <div class="pagination-dot" data-slide="2"></div>
             <div class="pagination-dot" data-slide="3"></div>
             <div class="pagination-dot" data-slide="4"></div>
-            <div class="pagination-dot" data-slide="5"></div>
         </div>
 
         <div class="stats-container">
@@ -1193,23 +1204,17 @@
                             <div class="label">Cuve vide le</div>
                             <div class="value" id="est-empty-date">--</div>
                         </div>
-                        <div class="stat-card no-bg">
+                        <div class="stat-card no-bg grey-text">
                             <div class="label">Nombre de livraisons</div>
                             <div class="value" id="stats-count">--</div>
                         </div>
-                        <div class="stat-card no-bg">
+                        <div class="stat-card no-bg grey-text">
                             <div class="label">Total livré</div>
                             <div class="value" id="stats-total-liters">-- litres</div>
                         </div>
                         <div class="stat-card full-width clickable" onclick="cycleSpentPeriod()">
                             <div class="label" id="spent-label">Total dépensé (2026)</div>
                             <div class="value" id="stats-total-spent">-- €</div>
-                        </div>
-                        <div class="stat-card full-width no-bg refill-highlight">
-                            <div class="refill-info" id="stats-min-refill">--</div>
-                        </div>
-                        <div class="stat-card full-width no-bg refill-highlight">
-                            <div class="refill-info" id="stats-max-refill">--</div>
                         </div>
                     </div>
 
@@ -1230,25 +1235,9 @@
                     </div>
                 </div>
 
-                <!-- Slide 2: Level Chart -->
-                <div class="stats-slide" style="padding-top: 150px; padding-bottom: 150px;">
-                    <div class="chart-card" style="height: calc(100% - 20px);">
-                        <div class="chart-header">
-                            <div class="chart-title">Niveau de la cuve</div>
-                        </div>
-                        <div class="chart-container"><canvas id="levelChart"></canvas></div>
-                    </div>
-                    <div class="chart-filters-grid">
-                        <button class="filter-btn" onclick="setLevelFilter('3m')">3 mois</button>
-                        <button class="filter-btn" onclick="setLevelFilter('6m')">6 mois</button>
-                        <button class="filter-btn active" onclick="setLevelFilter('1y')">1 an</button>
-                        <button class="filter-btn" onclick="setLevelFilter('all')">Tout</button>
-                    </div>
-                </div>
-
-                <!-- Slide 3: Price Chart -->
-                <div class="stats-slide" style="padding-top: 100px; padding-bottom: 100px;">
-                    <div class="chart-card" style="height: calc(100% - 80px);">
+                <!-- Slide 2: Price Chart + Level Chart -->
+                <div class="stats-slide">
+                    <div class="chart-card" style="height: 45%;">
                         <div class="chart-header">
                             <div class="chart-title">Prix au litre</div>
                         </div>
@@ -1263,6 +1252,18 @@
                             <div class="price-stat-label">Dernier prix</div>
                             <div class="price-stat-value" id="stat-last-price">-- €/L</div>
                         </div>
+                    </div>
+                    <div class="chart-card" style="height: 35%;">
+                        <div class="chart-header">
+                            <div class="chart-title">Niveau de la cuve</div>
+                        </div>
+                        <div class="chart-container"><canvas id="levelChart"></canvas></div>
+                    </div>
+                    <div class="chart-filters-row">
+                        <button class="filter-btn" onclick="setLevelFilter('3m')">3m</button>
+                        <button class="filter-btn" onclick="setLevelFilter('6m')">6m</button>
+                        <button class="filter-btn active" onclick="setLevelFilter('1y')">1an</button>
+                        <button class="filter-btn" onclick="setLevelFilter('all')">Tout</button>
                     </div>
                 </div>
 
@@ -1583,7 +1584,7 @@
                 if (!isDragging) return;
                 isDragging = false;
                 const diff = currentX - startX;
-                if (diff < -60 && currentSlide < 5) currentSlide++;
+                if (diff < -60 && currentSlide < 4) currentSlide++;
                 else if (diff > 60 && currentSlide > 0) currentSlide--;
                 updateSlide();
             });
