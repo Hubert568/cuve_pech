@@ -703,6 +703,36 @@
 
         .history-item:last-child { border-bottom: none; }
 
+        .history-month-header {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-align: center;
+            padding: 15px 0 8px 0;
+            margin-top: 5px;
+            border-top: 1px solid var(--bg-secondary);
+        }
+
+        .history-month-header:first-child {
+            border-top: none;
+            margin-top: 0;
+        }
+
+        .history-year-header {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 15px 0 8px 0;
+            margin-top: 5px;
+            border-top: 1px solid var(--bg-secondary);
+        }
+
+        .history-year-header:first-child {
+            border-top: none;
+            margin-top: 0;
+        }
+
         .history-date {
             font-size: 0.9rem;
             color: var(--text-secondary);
@@ -728,6 +758,16 @@
             padding: 4px 8px;
             opacity: 0.7;
             font-weight: bold;
+        }
+
+        .edit-btn {
+            background: none;
+            border: none;
+            color: var(--info);
+            font-size: 1rem;
+            padding: 4px 8px;
+            opacity: 0.7;
+        }
         }
 
         .empty-state {
@@ -1273,6 +1313,32 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="modal-edit-refill">
+        <div class="modal">
+            <div class="modal-title">Modifier Livraison</div>
+            <div class="modal-input-group">
+                <label>Date</label>
+                <input type="date" id="edit-refill-date">
+            </div>
+            <div class="modal-input-group">
+                <label>Quantité livrée (litres)</label>
+                <input type="number" id="edit-refill-liters" min="0" max="1000" placeholder="1 000 litres max" inputmode="numeric" oninput="if(this.value > 1000) this.value = 1000;">
+            </div>
+            <div class="modal-input-group">
+                <label>Prix total (€)</label>
+                <input type="number" id="edit-refill-price" min="0" step="0.01" placeholder="720.00" inputmode="decimal">
+            </div>
+            <div class="modal-input-group">
+                <label>Code de validation</label>
+                <input type="password" id="edit-refill-code" maxlength="10" placeholder="••••••••••" inputmode="numeric">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeEditRefillModal()">Annuler</button>
+                <button class="modal-btn primary" onclick="saveEditRefill()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="modal-delete">
         <div class="modal">
             <div class="modal-icon-svg">
@@ -1788,7 +1854,10 @@
                     scales: {
                         x: {
                             ticks: { color: '#8a8a8a', font: { size: 9 } },
-                            grid: { color: '#2a2a2a' }
+                            grid: { color: '#2a2a2a' },
+                            afterFit: function(scale) {
+                                scale.paddingRight = 80;
+                            }
                         },
                         y: {
                             ticks: { color: '#8a8a8a', font: { size: 10 } },
@@ -1912,8 +1981,54 @@
         function updateHistory() {
             const rl = document.getElementById('readings-list');
             const fl = document.getElementById('refills-list');
-            if (rl) rl.innerHTML = readings.length === 0 ? '<div class="empty-state">Aucune lecture</div>' : [...readings].reverse().map(r => `<div class="history-item"><span class="history-date">${formatDate(r.date)}</span><div class="history-values"><span class="history-level">${r.level} L</span><button class="delete-btn" onclick="deleteReading(${r.id})">×</button></div></div>`).join('');
-            if (fl) fl.innerHTML = refills.length === 0 ? '<div class="empty-state">Aucune livraison</div>' : [...refills].reverse().map(r => `<div class="history-item"><span class="history-date">${formatDate(r.date)}</span><div class="history-values"><span class="history-liters">${r.liters} L</span><span class="history-price">${r.price} €</span><span class="history-ppl">${r.pricePerLiter} €/L</span><button class="delete-btn" onclick="deleteRefill(${r.id})">×</button></div></div>`).join('');
+            
+            // Readings grouped by month
+            if (rl) {
+                if (readings.length === 0) {
+                    rl.innerHTML = '<div class="empty-state">Aucune lecture</div>';
+                } else {
+                    const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                    const grouped = {};
+                    [...readings].reverse().forEach(r => {
+                        const d = new Date(r.date);
+                        const key = `${months[d.getMonth()]} ${d.getFullYear()}`;
+                        if (!grouped[key]) grouped[key] = [];
+                        grouped[key].push(r);
+                    });
+                    
+                    let html = '';
+                    Object.entries(grouped).forEach(([month, items]) => {
+                        html += `<div class="history-month-header">${month}</div>`;
+                        items.forEach(r => {
+                            html += `<div class="history-item"><span class="history-date">${formatDate(r.date)}</span><div class="history-values"><span class="history-level">${r.level} L</span><button class="delete-btn" onclick="deleteReading(${r.id})">×</button></div></div>`;
+                        });
+                    });
+                    rl.innerHTML = html;
+                }
+            }
+            
+            // Refills grouped by year
+            if (fl) {
+                if (refills.length === 0) {
+                    fl.innerHTML = '<div class="empty-state">Aucune livraison</div>';
+                } else {
+                    const grouped = {};
+                    [...refills].reverse().forEach(r => {
+                        const year = new Date(r.date).getFullYear();
+                        if (!grouped[year]) grouped[year] = [];
+                        grouped[year].push(r);
+                    });
+                    
+                    let html = '';
+                    Object.entries(grouped).forEach(([year, items]) => {
+                        html += `<div class="history-year-header">— ${year} —</div>`;
+                        items.forEach(r => {
+                            html += `<div class="history-item"><span class="history-date">${formatDate(r.date)}</span><div class="history-values"><span class="history-liters">${r.liters} L</span><span class="history-price">${r.price} €</span><span class="history-ppl">${r.pricePerLiter} €/L</span><button class="edit-btn" onclick="openEditRefill(${r.id})">✎</button><button class="delete-btn" onclick="deleteRefill(${r.id})">×</button></div></div>`;
+                        });
+                    });
+                    fl.innerHTML = html;
+                }
+            }
         }
 
         function showPage(page) {
@@ -2088,6 +2203,52 @@
             document.getElementById('confirmation-date').textContent = date;
             popup.classList.add('show');
             setTimeout(() => popup.classList.remove('show'), 2000);
+        }
+
+        let editRefillId = null;
+
+        function openEditRefill(id) {
+            const refill = refills.find(r => r.id === id);
+            if (!refill) return;
+            
+            editRefillId = id;
+            document.getElementById('edit-refill-date').value = refill.date;
+            document.getElementById('edit-refill-liters').value = refill.liters;
+            document.getElementById('edit-refill-price').value = refill.price;
+            document.getElementById('edit-refill-code').value = '';
+            document.getElementById('modal-edit-refill').classList.add('show');
+        }
+
+        function closeEditRefillModal() {
+            document.getElementById('modal-edit-refill').classList.remove('show');
+            editRefillId = null;
+        }
+
+        function saveEditRefill() {
+            const code = document.getElementById('edit-refill-code').value;
+            if (hashCode(code) !== VALID_HASH) { showToast('Erreur', true); return; }
+            
+            const date = document.getElementById('edit-refill-date').value;
+            const liters = parseInt(document.getElementById('edit-refill-liters').value);
+            const price = parseFloat(document.getElementById('edit-refill-price').value);
+            
+            if (!date) { showToast('Date invalide', true); return; }
+            if (isNaN(liters) || liters <= 0) { showToast('Quantité invalide', true); return; }
+            if (isNaN(price) || price <= 0) { showToast('Prix invalide', true); return; }
+            
+            const refill = refills.find(r => r.id === editRefillId);
+            if (refill) {
+                refill.date = date;
+                refill.liters = liters;
+                refill.price = price;
+                refill.pricePerLiter = (price / liters).toFixed(3);
+                
+                refills.sort((a, b) => new Date(a.date) - new Date(b.date));
+                saveData();
+                updateUI();
+                closeEditRefillModal();
+                showConfirmation('Livraison', 'modifiée', '✓');
+            }
         }
 
         function handleTankClick() {
