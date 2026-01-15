@@ -1210,7 +1210,6 @@
             <div class="pagination-dot" data-slide="3"></div>
             <div class="pagination-dot" data-slide="4"></div>
             <div class="pagination-dot" data-slide="5"></div>
-            <div class="pagination-dot" data-slide="6"></div>
         </div>
 
         <div class="stats-container">
@@ -1653,7 +1652,7 @@
                 if (!isDragging) return;
                 isDragging = false;
                 const diff = currentX - startX;
-                if (diff < -60 && currentSlide < 6) currentSlide++;
+                if (diff < -60 && currentSlide < 5) currentSlide++;
                 else if (diff > 60 && currentSlide > 0) currentSlide--;
                 updateSlide();
             });
@@ -1756,6 +1755,7 @@
             updateDeliveryNav();
             updateCharts();
             updateHistory();
+            updateRefillsTable();
         }
 
         function updateTank() {
@@ -1836,17 +1836,6 @@
                     const yearlyAvg = Math.round(totalLiters / totalYears);
                     document.getElementById('est-yearly').textContent = `${yearlyAvg.toLocaleString()} litres`;
                 }
-            }
-            
-            // Min/Max refills by price per liter
-            if (refills.length > 0) {
-                const sortedByPPL = [...refills].sort((a, b) => parseFloat(a.pricePerLiter) - parseFloat(b.pricePerLiter));
-                const minRefill = sortedByPPL[0];
-                const maxRefill = sortedByPPL[sortedByPPL.length - 1];
-                
-                document.getElementById('stats-min-refill').innerHTML = `<span class="prefix">−</span> <span class="val success">${minRefill.liters} L</span> · <span class="val accent">${minRefill.price} €</span> · <span class="val info">${minRefill.pricePerLiter} €/L</span> · <span class="date">${formatDateFull(minRefill.date)}</span>`;
-                
-                document.getElementById('stats-max-refill').innerHTML = `<span class="prefix">+</span> <span class="val success">${maxRefill.liters} L</span> · <span class="val accent">${maxRefill.price} €</span> · <span class="val info">${maxRefill.pricePerLiter} €/L</span> · <span class="date">${formatDateFull(maxRefill.date)}</span>`;
             }
         }
 
