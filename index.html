@@ -336,16 +336,16 @@
             display: flex;
             transition: transform 0.2s ease-out;
             min-height: 0;
-            overflow: hidden;
+            height: 100%;
         }
 
         .stats-slide {
             min-width: 100%;
-            height: 100%;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            min-height: 0;
-            overflow: hidden;
+            padding: 10px 15px;
+            box-sizing: border-box;
         }
 
         .pagination {
@@ -1281,8 +1281,8 @@
                 </div>
 
                 <!-- Slide 2: Price Chart + Level Chart -->
-                <div class="stats-slide" style="padding: 10px 0;">
-                    <div class="chart-card" style="height: 40%; margin-bottom: 5px;">
+                <div class="stats-slide">
+                    <div class="chart-card" style="flex: 4;">
                         <div class="chart-header">
                             <div class="chart-title">Prix au litre</div>
                         </div>
@@ -1306,7 +1306,7 @@
                             <div class="price-stat-value" id="stat-last-price">--</div>
                         </div>
                     </div>
-                    <div class="chart-card" style="height: 35%; margin-top: 5px;">
+                    <div class="chart-card" style="flex: 3;">
                         <div class="chart-header">
                             <div class="chart-title">Niveau de la cuve</div>
                         </div>
